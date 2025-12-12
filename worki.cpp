@@ -1,41 +1,53 @@
 #include "worki.h"
-#include <vector>
+#include <list>
 #include <iostream>
 
-static std::vector<przedmiot*> g_przedmioty;
-static worek* g_biurko = new worek;
-static std::vector<worek*> g_worki = {g_biurko};
+// Musimy gdzies przechowywac przedmioty zeby potem moc je wszystkie zwolnic
+// By osiagnoc operacje w rzeczywistym czasie stalym uzywamy listy
+static std::list<przedmiot*> g_przedmioty;
+static std::list<worek*> g_worki;
+static worek* g_biurko = nullptr;
+
+static void initBiurko(){
+    g_biurko = new worek;
+    g_biurko->id = -1;
+    g_worki.push_back(g_biurko);
+    g_biurko->selfpointer = &g_worki.back();
+    g_biurko->nadworek = &g_worki.back(); 
+}
 
 przedmiot* nowy_przedmiot(){
     static int id = 0;
+    if (g_biurko == nullptr) initBiurko();
     przedmiot* p = new przedmiot;
-    g_przedmioty.push_back(p);
     p->id = id;
     id++;
-    p->nadworek = g_biurko->index;
+    g_przedmioty.push_back(p);
+    p->nadworek = g_biurko->selfpointer;
     return p;
 }
 
 worek* nowy_worek(){
     static int id = 0;
+    if (g_biurko == nullptr) initBiurko();
     worek* w = new worek;
-    w->index = static_cast<int>(g_worki.size());
-    g_worki.push_back(w);
     w->id = id;
     id++;
-    w->nadworek = g_biurko->index;
+    g_worki.push_back(w);
+    w->selfpointer = &g_worki.back();
+    w->nadworek = g_biurko->selfpointer;
     return w;
 }
 
 void wloz(przedmiot* co, worek *gdzie){
-    g_worki[co->nadworek]->liczbaElementow--;
-    co->nadworek = gdzie->index;
+    (*co->nadworek)->liczbaElementow--;
+    co->nadworek = gdzie->selfpointer;
     gdzie->liczbaElementow++;
 }
 
 void wloz(worek* co, worek* gdzie){
-    g_worki[co->nadworek]->liczbaElementow -= co->liczbaElementow;
-    co->nadworek = gdzie->index;
+    (*co->nadworek)->liczbaElementow -= co->liczbaElementow;
+    co->nadworek = gdzie->selfpointer;
     gdzie->liczbaElementow += co->liczbaElementow;
 }
 
@@ -48,11 +60,11 @@ void wyjmij(worek* w){
 }
 
 int w_ktorym_worku(przedmiot* p){
-    return g_worki[p->nadworek]->id; 
+    return (*p->nadworek)->id; 
 }
 
 int w_ktorym_worku(worek* w){
-    return g_worki[w->nadworek]->id; 
+    return (*w->nadworek)->id; 
 }
 
 int ile_przedmiotow(worek* w){
@@ -60,9 +72,9 @@ int ile_przedmiotow(worek* w){
 }
 
 void na_odwrot(worek* w){
-    std::swap(g_worki[g_biurko->index], g_worki[w->index]);
-    std::swap(g_biurko->index, w->index);
-    w->nadworek = g_biurko->index;
+    std::swap(*w->selfpointer, *g_biurko->selfpointer);
+    std::swap(w->selfpointer, g_biurko->selfpointer);
+    w->nadworek = g_biurko->selfpointer;
     w->liczbaElementow = static_cast<int>(g_przedmioty.size()) - w->liczbaElementow;
 }
 
