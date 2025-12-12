@@ -6,8 +6,8 @@ struct worek;
 // Należy wypełnić
 struct przedmiot {
     // Twój kod zaczyna się tu
-    int id;
-    int nadworek = 0; 
+    int id = 0;
+    worek** nadworek = nullptr;
     // A kończy tu
 };
 
@@ -15,9 +15,9 @@ struct przedmiot {
 struct worek {
     // Twój kod zaczyna się tu
     int id = -1;
-    int nadworek = -1;
+    worek** nadworek = nullptr;
     int liczbaElementow = 0;
-    int index = 0;
+    worek** selfpointer = nullptr;
     // A kończy tu
 };
 
