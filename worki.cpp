@@ -17,11 +17,9 @@ static void initBiurko(){
 }
 
 przedmiot* nowy_przedmiot(){
-    static int id = 0;
     if (g_biurko == nullptr) initBiurko();
+
     przedmiot* p = new przedmiot;
-    p->id = id;
-    id++;
     g_przedmioty.push_back(p);
     p->nadworek = g_biurko->selfpointer;
     return p;
@@ -30,6 +28,7 @@ przedmiot* nowy_przedmiot(){
 worek* nowy_worek(){
     static int id = 0;
     if (g_biurko == nullptr) initBiurko();
+
     worek* w = new worek;
     w->id = id;
     id++;
@@ -72,6 +71,8 @@ int ile_przedmiotow(worek* w){
 }
 
 void na_odwrot(worek* w){
+    // Jako ze worki nie wiedza nic o swojej zawartosci to wystarczy zamienic 
+    // lokalizacje ich adresow w czasie stalym
     std::swap(*w->selfpointer, *g_biurko->selfpointer);
     std::swap(w->selfpointer, g_biurko->selfpointer);
     w->nadworek = g_biurko->selfpointer;
